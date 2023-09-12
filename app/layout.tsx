@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	description: 'Descubra as curiosidades do mapa do Brasil com nosso quiz interativo e conquiste seu top no ranking!',
 	openGraph: {
 		title: 'Quiz Brasil 🧭',
-		images: 'https://www.pngmart.com/files/19/Quiz-PNG-Clipart.png'
+		images: 'https://www.facebook.com/photo.php?fbid=581350413691919&set=a.581350400358587&type=3&mibextid=rS40aB7S9Ucbxw6v'
 	}
 }
 

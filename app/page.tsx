@@ -1,7 +1,6 @@
 import Image from "next/image";
 import mapa from '@/assets/images/mapa-70.png'
 import logo from '@/assets/images/logo-quiz.png'
-import { Button } from "@nextui-org/button";
 import { Link } from "@nextui-org/link";
 
 export default function Home() {
