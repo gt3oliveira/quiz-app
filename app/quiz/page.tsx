@@ -1,9 +1,10 @@
 'use client'
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { questions } from '@/api/db'
-import { gabarito } from '@/api/dbGabarito'
 import { Button, CircularProgress, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, RadioGroup, RadioProps, VisuallyHidden, cn, useDisclosure, useRadio } from "@nextui-org/react";
-import Router from 'next/router';
+import { useRouter } from 'next/navigation';
+import Resultado from '../resultado/page';
 
 export const CustomRadio = (props: RadioProps) => {
   const {
@@ -44,7 +45,7 @@ export const CustomRadio = (props: RadioProps) => {
   );
 };
 
-type QuestionsProps = {
+interface QuestionsProps {
   id: number;
   pergunta: string;
   altA: string;
@@ -52,32 +53,22 @@ type QuestionsProps = {
   altC: string;
 }
 
-type ChangeQuestion = {
+interface ChangeQuestion {
   id: number;
   resposta: string;
 }
 
-interface ResultadoGab{
-  changeQuestions: ChangeQuestion[];
-  gabarito?: string;
-  cor?: string;
-}
+export default function Quiz() {
+  const router = useRouter()  
 
-interface QuizProps {
-  questionsProps: QuestionsProps[];
-  changeQuestions: ChangeQuestion[]
-}
-
-export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [qProps, setQProps] = useState<QuestionsProps[]>(questionsProps || [])
-  const [resposta, setResposta] = useState<ChangeQuestion[]>(changeQuestions || [])
-  const [gabResposta, setGabResposta] = useState<ChangeQuestion[]>(changeQuestions || [])
-  const [qResultado, setQResultado] = useState<ChangeQuestion[]>(changeQuestions || [])
+  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [qProps, setQProps] = useState<QuestionsProps[]>([])
+  const [resposta, setResposta] = useState<ChangeQuestion[]>([])
   const [percent, setPercent] = useState(0)
-  const [second, setSecond] = useState(Number)
+  const [second, setSecond] = useState(0)
   const [question, setQuestion] = useState(1)
   const [optionsChange, setOptionsChange] = useState('')
+  const [resultado, setResultado] = useState(false)
 
   useEffect(() => {
     let qprops: QuestionsProps[] = []
@@ -92,15 +83,6 @@ export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
         })
       }
 
-      let listaGab: ChangeQuestion[] = []
-      gabarito.map((g) => {
-        listaGab.push({
-          id: g.id,
-          resposta: g.resposta
-        })
-      })
-
-      setGabResposta(listaGab)
       setQProps(qprops)
       setQuestion(question + 1)
     })
@@ -108,22 +90,34 @@ export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
   }, [])
 
   useEffect(() => {
-    setSecond(30)
+    setSecond(20)
     const interval = setInterval(() => {
-      setSecond((v) => (v !== 0 ? v - 1 : 0));
-    }, 1000);
+      setSecond((v) => (v !== 0 ? v - 1 : -1));
+    }, 1000);    
+
     return () => clearInterval(interval);
   }, [question]);
 
-  function handleQuentions() {
+  useEffect(() => {
+    if(second === -1 && resultado === false){
+      alert("Acabou o tempo. Você Perdeu!")
+      setTimeout(()=>{
+        router.push('/')
+      }, 0)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [second])
+
+  function handleQuestions() {
     let mhResposta = {
       id: (question - 1),
       resposta: optionsChange
     }
 
     setResposta([...resposta, mhResposta])
+    // postData(mhResposta)
 
-    if ((question - 1) !== 10) {
+    if ((question - 1) < 10) {
       let qprops: QuestionsProps[] = []
       questions.filter((item) => {
         if (item.id === question) {
@@ -140,31 +134,19 @@ export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
       setQuestion(question + 1)
       setQProps(qprops)
     } else {
-      setPercent(100)
-      setQuestion(10)
-      handleVerifyQuestions()
+      // setPercent(100)
+      // setQuestion(10)
+      handleFinish()
     }
   }
 
-  function handleVerifyQuestions() {
-    let resultadoCorreto: ChangeQuestion[] = [] 
-    gabResposta.map((g) => {
-      resultadoCorreto.push({
-        id: g.id,
-        resposta: g.resposta
-      })
-    })
-
-    setQResultado(resultadoCorreto)
-    onOpen()
-  }
-
-  function handleFinish() {
-    Router.push('/')
+  function handleFinish() {      
+    setResultado(!resultado)
   }
 
   return (
     <div>
+      {!resultado && (
       <main className=' flex flex-col justify-center items-center h-[100vh] bg-[var(--background-quiz)]'>
         <section className='bg-[var(--bg-quiz)] h-[80vh] w-[60vw]'>
           <div className='flex flex-row justify-around gap-[400px] items-center h-[80px] border-b-1 border-b-[var(--gray-100)]'>
@@ -199,7 +181,7 @@ export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
                 <CircularProgress
                   value={second}
                   minValue={0}
-                  maxValue={30}
+                  maxValue={20}
                   color="primary"
                   showValueLabel={true}
                   formatOptions={{ style: "unit", unit: 'second' }}
@@ -233,11 +215,11 @@ export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
 
             <div className='flex justify-end mt-4'>
               {(question - 1) === 10 ? (
-                <Button onPress={() => (handleQuentions(), handleVerifyQuestions())} className='bg-[var(--button-quiz)] text-white rounded-none px-8 py-6'>
+                <Button onPress={() => handleQuestions()} className='bg-[var(--button-quiz)] text-white rounded-none px-8 py-6'>
                   <span>Finalizar</span>
                 </Button>
               ) : (
-                <Button onPress={() => handleQuentions()} className='bg-[var(--button-quiz)] text-white rounded-none px-8 py-6'>
+                <Button onPress={() => handleQuestions()} className='bg-[var(--button-quiz)] text-white rounded-none px-8 py-6'>
                   <span>Próxima pergunta</span>
                 </Button>
               )}
@@ -245,35 +227,13 @@ export default function Quiz({ questionsProps, changeQuestions }: QuizProps) {
           </div>
         </section>
       </main>
+      )}
 
-      <Modal scrollBehavior='inside' isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Resultado</ModalHeader>
-              <ModalBody>
-                {qResultado.map((item) => (
-                  <div key={item.id}>
-                    <span>
-                      Questão {item.id}
-                    </span>
-                    <p>
-                      {item.resposta}
-                    </p>
-                    <hr />
-                  </div>
-                ))}
-              </ModalBody>
-              <ModalFooter>
-                <Button color="success" onPress={() => (onClose(), handleFinish())}>
-                  Fim do questionário
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      {resultado && (
+        <Resultado dataquestions={resposta}/>
+      )}
 
     </div>
   )
 }
+
