@@ -198,14 +198,18 @@ export default function Quiz() {
               {qProps.map((item) => (
                 <div key={item.id}>
                   <span className='text-white'>{item.pergunta}</span>
-                  <RadioGroup className='mt-4'>
-                    <CustomRadio value={item.altA} onChange={(e) => setOptionsChange(e.target.value)}>
+                  <RadioGroup 
+                    className='mt-4'
+                    value={optionsChange}
+                    onValueChange={setOptionsChange}
+                  >
+                    <CustomRadio value={item.altA}>
                       <span className='text-white'>{item.altA}</span>
                     </CustomRadio>
-                    <CustomRadio value={item.altB} onChange={(e) => setOptionsChange(e.target.value)}>
+                    <CustomRadio value={item.altB}>
                       <span className='text-white'>{item.altB}</span>
                     </CustomRadio>
-                    <CustomRadio value={item.altC} onChange={(e) => setOptionsChange(e.target.value)}>
+                    <CustomRadio value={item.altC}>
                       <span className='text-white'>{item.altC}</span>
                     </CustomRadio>
                   </RadioGroup>
