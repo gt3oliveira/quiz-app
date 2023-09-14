@@ -2,7 +2,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import { questions } from '@/api/db'
-import { Button, CircularProgress, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, RadioGroup, RadioProps, VisuallyHidden, cn, useDisclosure, useRadio } from "@nextui-org/react";
+import { Button, CircularProgress, Progress, RadioGroup, RadioProps, VisuallyHidden, cn, useRadio } from "@nextui-org/react";
 import { useRouter } from 'next/navigation';
 import Resultado from '../resultado/page';
 
